@@ -2,6 +2,13 @@ const { Telegraf } = require('telegraf')
 const fetch = require('node-fetch');
 const xml2js = require('xml2js');
 
+if(!process.env.BOTONEWSTOKEN) {
+    return console.error("Please set BOTONEWSTOKEN")
+}
+if(!process.env.BOTONEWSTWITTERTOKEN) {
+    return console.error("Please set BOTONEWSTWITTERTOKEN")
+}
+
 const bot = new Telegraf(process.env.BOTONEWSTOKEN);
 
 const sleep = (waitTimeInMs) => new Promise(resolve => setTimeout(resolve, waitTimeInMs));
