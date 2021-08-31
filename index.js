@@ -13,9 +13,10 @@ const bot = new Telegraf(process.env.BOTONEWSTOKEN);
 
 const sleep = (waitTimeInMs) => new Promise(resolve => setTimeout(resolve, waitTimeInMs));
 
-let tweetsphp = `[@php_ceo](https://twitter.com/php_ceo) last tweets :\n\n\n`
-let tweetsneckbeard = `[@neckbeardhacker](https://twitter.com/NeckbeardHacker) last tweets :\n\n\n`
-let tweetshipster = `[@hispterhacker](https://twitter.com/hipsterhacker) last tweets :\n\n\n`
+var tweetsphp = `[@php_ceo](https://twitter.com/php_ceo) last tweets :\n\n\n`
+var tweetsneckbeard = `[@neckbeardhacker](https://twitter.com/NeckbeardHacker) last tweets :\n\n\n`
+var tweetshipster = `[@hispterhacker](https://twitter.com/hipsterhacker) last tweets :\n\n\n`
+var newsepfl = `Les dernières news de l'EPFL\n\n`
 
 bot.command('getfeed', (ctx) => {
     fetch('https://go.epfl.ch/feed')
@@ -30,7 +31,7 @@ bot.command('getfeed', (ctx) => {
             const superjson = JSON.parse(json)
             //console.log(superjson.feed.entry)
 
-            let messages = `Les derniers liens raccourcis sur go.epfl.ch\n\n`
+            var messages = `Les derniers liens raccourcis sur go.epfl.ch\n\n`
 
             for (let i = 0; i != 3; i++) {
                 messages = messages + `${superjson.feed.entry[i].title[0]._}\n\n`
@@ -41,7 +42,7 @@ bot.command('getfeed', (ctx) => {
                 .then(res => res.json())
                 .then(body => {
 
-                    let titles = `Ycombinator last posts\n\n`
+                    var titles = `Ycombinator last posts\n\n`
 
                     for (let i = 0; i != 3; i++) {
                         // console.log(body[i])
@@ -95,8 +96,26 @@ bot.command('getfeed', (ctx) => {
                     sleep(1000).then(() => {
                         ctx.telegram.sendMessage(ctx.message.chat.id, `${tweetsneckbeard}${tweetshipster}${tweetsphp}`, { parse_mode: 'Markdown' })
                       });
+                    tweetsphp = `[@php_ceo](https://twitter.com/php_ceo) last tweets :\n\n\n`
+                    tweetsneckbeard = `[@neckbeardhacker](https://twitter.com/NeckbeardHacker) last tweets :\n\n\n`
+                    tweetshipster = `[@hispterhacker](https://twitter.com/hipsterhacker) last tweets :\n\n\n`
+                      
+                fetch('https://actu.epfl.ch/api/v1/channels/1/news/?lang=en', {
+                    method: 'get',
+                })
+                .then(res => res.json())
+                .then(body => {
 
-                    
+                    for (let i = 0; i != 3; i++) {
+                        newsepfl = newsepfl + `[${body.results[i].title}](${body.results[i].news_url})\n\n`
+                    }
+                })
+
+                    sleep(1000).then(() => {
+                        ctx.telegram.sendMessage(ctx.message.chat.id, `${newsepfl}`, { parse_mode: 'Markdown' })
+                    });
+                    newsepfl = `Les dernières news de l'EPFL\n\n`
+
 
                 })
         })
