@@ -23,6 +23,25 @@ bot.command('getfeed', (ctx) => {
                 messages = messages + `${superjson.feed.entry[i].title[0]._}\n\n`
             }
             ctx.telegram.sendMessage(ctx.message.chat.id, `${messages}`)
+
+            fetch('https://hacker-news.firebaseio.com/v0/newstories.json?print=pretty')
+                .then(res => res.json())
+                .then(body => {
+
+                    let titles = `Ycombinator last posts\n\n`
+
+                    for (let i = 0; i != 3; i++) {
+                        // console.log(body[i])
+                        fetch(`https://hacker-news.firebaseio.com/v0/item/${body[i]}.json?print=pretty`)
+                            .then(res => res.json())
+                            .then(body => {
+                                titles = titles + `[${body.title}](${body.url})\n\n`
+                            })
+                    }
+                    sleep(1000).then(() => {
+                        ctx.telegram.sendMessage(ctx.message.chat.id, `${titles}`, { parse_mode: 'Markdown' })
+                      });
+                })
         })
     })
 bot.launch();
