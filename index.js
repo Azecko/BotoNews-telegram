@@ -6,6 +6,7 @@ const config = require("./config.json")
 var fetchtweets = require("./lib/fetchtweets.js")
 var fetchgo = require("./lib/fetchgo.js")
 var fetchhacker = require("./lib/fetchhacker.js")
+var fetchactu = require("./lib/fetchactu.js")
 
 if(!config.BOTONEWSTOKEN) {
     return console.error("Please set BOTONEWSTOKEN")
@@ -33,6 +34,7 @@ bot.command('getfeed', async (ctx) => {
                 messages = messages + godata
                 sleep(1000).then(() => {
                     ctx.telegram.sendMessage(ctx.message.chat.id, `${messages}`, { parse_mode: 'Markdown' })
+                    messages = `Les derniers liens raccourcis sur go.epfl.ch\n\n`
                 });
 
                 // Ycombinator last posts
@@ -41,6 +43,7 @@ bot.command('getfeed', async (ctx) => {
                 titles  = titles + hackerdata
                 sleep(1000).then(() => {
                     ctx.telegram.sendMessage(ctx.message.chat.id, `${titles}`, { parse_mode: 'Markdown' })
+                    titles = `Ycombinator last posts\n\n`
                 });
 
                 // Tweets
@@ -59,27 +62,20 @@ bot.command('getfeed', async (ctx) => {
                     
                 sleep(1000).then(() => {
                     ctx.telegram.sendMessage(ctx.message.chat.id, `${tweetsneckbeard}${tweetshipster}${tweetsphp}`, { parse_mode: 'Markdown' })
-                    });
-                tweetsphp = `[@php_ceo](https://twitter.com/php_ceo) last tweets :\n\n\n`
-                tweetsneckbeard = `[@neckbeardhacker](https://twitter.com/NeckbeardHacker) last tweets :\n\n\n`
-                tweetshipster = `[@hispterhacker](https://twitter.com/hipsterhacker) last tweets :\n\n\n`
+                    tweetsphp = `[@php_ceo](https://twitter.com/php_ceo) last tweets :\n\n\n`
+                    tweetsneckbeard = `[@neckbeardhacker](https://twitter.com/NeckbeardHacker) last tweets :\n\n\n`
+                    tweetshipster = `[@hispterhacker](https://twitter.com/hipsterhacker) last tweets :\n\n\n`
+                });
 
                 // Actu EPFL
-                      
-                fetch('https://actu.epfl.ch/api/v1/channels/1/news/?lang=en', {
-                    method: 'get',
-                })
-                .then(res => res.json())
-                .then(body => {
-                    for (let i = 0; i != 3; i++) {
-                        newsepfl = newsepfl + `[${body.results[i].title}](${body.results[i].news_url})\n\n`
-                    }
-                })
-                    sleep(1000).then(() => {
-                        ctx.telegram.sendMessage(ctx.message.chat.id, `${newsepfl}`, { parse_mode: 'Markdown' })
-                    });
+
+                let actuepfl = await fetchactu()
+                newsepfl  = newsepfl + actuepfl
+                sleep(1000).then(() => {
+                    ctx.telegram.sendMessage(ctx.message.chat.id, `${newsepfl}`, { parse_mode: 'Markdown' })
                     newsepfl = `Les dernières news de l'EPFL\n\n`
-                })
+                });
+        })
 
 bot.launch();
 
