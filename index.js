@@ -5,6 +5,7 @@ const config = require("./config.json")
 
 var fetchtweets = require("./lib/fetchtweets.js")
 var fetchgo = require("./lib/fetchgo.js")
+var fetchhacker = require("./lib/fetchhacker.js")
 
 if(!config.BOTONEWSTOKEN) {
     return console.error("Please set BOTONEWSTOKEN")
@@ -22,33 +23,27 @@ var tweetsneckbeard = `[@neckbeardhacker](https://twitter.com/NeckbeardHacker) l
 var tweetshipster = `[@hispterhacker](https://twitter.com/hipsterhacker) last tweets :\n\n\n`
 var newsepfl = `Les dernières news de l'EPFL\n\n`
 var messages = `Les derniers liens raccourcis sur go.epfl.ch\n\n`
+var titles = `Ycombinator last posts\n\n`
 
 bot.command('getfeed', async (ctx) => {
-    
-            let godata = await fetchgo()
-            messages = messages + godata
-            sleep(1000).then(() => {
-                ctx.telegram.sendMessage(ctx.message.chat.id, `${messages}`, { parse_mode: 'Markdown' })
-            });
 
-            fetch('https://hacker-news.firebaseio.com/v0/newstories.json?print=pretty')
-                .then(res => res.json())
-                .then(body => {
+                // go.epfl.ch last minimized urls
 
-                    var titles = `Ycombinator last posts\n\n`
+                let godata = await fetchgo()
+                messages = messages + godata
+                sleep(1000).then(() => {
+                    ctx.telegram.sendMessage(ctx.message.chat.id, `${messages}`, { parse_mode: 'Markdown' })
+                });
 
-                    for (let i = 0; i != 3; i++) {
-                        // console.log(body[i])
-                        fetch(`https://hacker-news.firebaseio.com/v0/item/${body[i]}.json?print=pretty`)
-                            .then(res => res.json())
-                            .then(body => {
-                                titles = titles + `[${body.title}](${body.url})\n\n`
-                            })
-                    }
-                    sleep(1000).then(() => {
-                        ctx.telegram.sendMessage(ctx.message.chat.id, `${titles}`, { parse_mode: 'Markdown' })
-                      });
-                })
+                // Ycombinator last posts
+
+                let hackerdata = await fetchhacker()
+                titles  = titles + hackerdata
+                sleep(1000).then(() => {
+                    ctx.telegram.sendMessage(ctx.message.chat.id, `${titles}`, { parse_mode: 'Markdown' })
+                });
+
+                // Tweets
 
                 fetchtweets("278523798", "neckbeardhacker").then(function(result) {
                     tweetsneckbeard = tweetsneckbeard + result
@@ -62,12 +57,14 @@ bot.command('getfeed', async (ctx) => {
                     tweetsphp = tweetsphp + result
                 })
                     
-                    sleep(1000).then(() => {
-                        ctx.telegram.sendMessage(ctx.message.chat.id, `${tweetsneckbeard}${tweetshipster}${tweetsphp}`, { parse_mode: 'Markdown' })
-                      });
-                    tweetsphp = `[@php_ceo](https://twitter.com/php_ceo) last tweets :\n\n\n`
-                    tweetsneckbeard = `[@neckbeardhacker](https://twitter.com/NeckbeardHacker) last tweets :\n\n\n`
-                    tweetshipster = `[@hispterhacker](https://twitter.com/hipsterhacker) last tweets :\n\n\n`
+                sleep(1000).then(() => {
+                    ctx.telegram.sendMessage(ctx.message.chat.id, `${tweetsneckbeard}${tweetshipster}${tweetsphp}`, { parse_mode: 'Markdown' })
+                    });
+                tweetsphp = `[@php_ceo](https://twitter.com/php_ceo) last tweets :\n\n\n`
+                tweetsneckbeard = `[@neckbeardhacker](https://twitter.com/NeckbeardHacker) last tweets :\n\n\n`
+                tweetshipster = `[@hispterhacker](https://twitter.com/hipsterhacker) last tweets :\n\n\n`
+
+                // Actu EPFL
                       
                 fetch('https://actu.epfl.ch/api/v1/channels/1/news/?lang=en', {
                     method: 'get',
